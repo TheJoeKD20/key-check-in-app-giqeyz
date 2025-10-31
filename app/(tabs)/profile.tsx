@@ -1,91 +1,136 @@
-import React from "react";
+
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { colors, commonStyles } from "@/styles/commonStyles";
 
 export default function ProfileScreen() {
-  const theme = useTheme();
-
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
-      <ScrollView
-        style={styles.container}
+    <View style={[commonStyles.container]}>
+      <ScrollView 
         contentContainerStyle={[
-          styles.contentContainer,
-          Platform.OS !== 'ios' && styles.contentContainerWithTabBar
+          styles.scrollContent,
+          Platform.OS !== 'ios' && styles.scrollContentWithTabBar
         ]}
+        showsVerticalScrollIndicator={false}
       >
-        <GlassView style={[
-          styles.profileHeader,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <IconSymbol name="person.circle.fill" size={80} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+        {Platform.OS !== 'ios' && (
+          <Text style={[commonStyles.title, styles.headerTitle]}>Profile</Text>
+        )}
+        
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            <IconSymbol name="person.fill" color={colors.card} size={48} />
+          </View>
+          <Text style={styles.profileName}>Key Manager</Text>
+          <Text style={styles.profileRole}>Administrator</Text>
+        </View>
 
-        <GlassView style={[
-          styles.section,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol name="phone.fill" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
+        <View style={styles.infoSection}>
+          <Text style={commonStyles.subtitle}>About</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <IconSymbol name="building.2.fill" color={colors.primary} size={20} />
+              <Text style={styles.infoText}>Key Management System</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.infoRow}>
+              <IconSymbol name="info.circle.fill" color={colors.secondary} size={20} />
+              <Text style={styles.infoText}>Version 1.0.0</Text>
+            </View>
           </View>
-          <View style={styles.infoRow}>
-            <IconSymbol name="location.fill" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
+        </View>
+
+        <View style={styles.descriptionSection}>
+          <Text style={commonStyles.subtitle}>System Information</Text>
+          <View style={styles.descriptionCard}>
+            <Text style={styles.descriptionText}>
+              This application helps you manage client site keys efficiently. 
+              You can check keys in and out, track who has them, and maintain 
+              a complete inventory of all keys in the system.
+            </Text>
           </View>
-        </GlassView>
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    // backgroundColor handled dynamically
-  },
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
+  scrollContent: {
     padding: 20,
+    paddingBottom: 40,
   },
-  contentContainerWithTabBar: {
-    paddingBottom: 100, // Extra padding for floating tab bar
+  scrollContentWithTabBar: {
+    paddingBottom: 120,
+  },
+  headerTitle: {
+    marginBottom: 20,
   },
   profileHeader: {
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 32,
+    marginBottom: 32,
+  },
+  avatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 16,
-    gap: 12,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+    elevation: 5,
   },
-  name: {
+  profileName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    // color handled dynamically
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
   },
-  email: {
+  profileRole: {
     fontSize: 16,
-    // color handled dynamically
+    color: colors.textSecondary,
   },
-  section: {
+  infoSection: {
+    marginBottom: 24,
+  },
+  infoCard: {
+    backgroundColor: colors.card,
     borderRadius: 12,
-    padding: 20,
-    gap: 12,
+    padding: 16,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingVertical: 12,
   },
   infoText: {
     fontSize: 16,
-    // color handled dynamically
+    color: colors.text,
+    marginLeft: 12,
+    flex: 1,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  descriptionSection: {
+    marginBottom: 24,
+  },
+  descriptionCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 20,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
+  },
+  descriptionText: {
+    fontSize: 15,
+    color: colors.text,
+    lineHeight: 24,
   },
 });

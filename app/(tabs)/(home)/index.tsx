@@ -1,79 +1,79 @@
-import React from "react";
-import { Stack, Link } from "expo-router";
-import { FlatList, Pressable, StyleSheet, View, Text, Alert, Platform } from "react-native";
-import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
 
-const ICON_COLOR = "#007AFF";
+import React, { useState, useEffect } from "react";
+import { Stack, Link } from "expo-router";
+import { ScrollView, Pressable, StyleSheet, View, Text, Platform } from "react-native";
+import { IconSymbol } from "@/components/IconSymbol";
+import { colors, commonStyles } from "@/styles/commonStyles";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface Key {
+  id: string;
+  name: string;
+  location: string;
+  isCheckedOut: boolean;
+  checkedOutBy?: string;
+  checkedOutAt?: string;
+}
 
 export default function HomeScreen() {
-  const theme = useTheme();
-  const modalDemos = [
+  const [keys, setKeys] = useState<Key[]>([]);
+  const [checkedOutCount, setCheckedOutCount] = useState(0);
+
+  useEffect(() => {
+    loadKeys();
+  }, []);
+
+  const loadKeys = async () => {
+    try {
+      const storedKeys = await AsyncStorage.getItem('keys');
+      if (storedKeys) {
+        const parsedKeys = JSON.parse(storedKeys);
+        setKeys(parsedKeys);
+        const checkedOut = parsedKeys.filter((k: Key) => k.isCheckedOut).length;
+        setCheckedOutCount(checkedOut);
+      }
+    } catch (error) {
+      console.log('Error loading keys:', error);
+    }
+  };
+
+  const menuItems = [
     {
-      title: "Standard Modal",
-      description: "Full screen modal presentation",
-      route: "/modal",
-      color: "#007AFF",
+      title: "Check Out Key",
+      description: "Sign out a key to a person",
+      route: "/check-out",
+      icon: "arrow.right.circle.fill",
+      color: colors.primary,
     },
     {
-      title: "Form Sheet",
-      description: "Bottom sheet with detents and grabber",
-      route: "/formsheet",
-      color: "#34C759",
+      title: "Check In Key",
+      description: "Return a key to inventory",
+      route: "/check-in",
+      icon: "arrow.left.circle.fill",
+      color: colors.secondary,
     },
     {
-      title: "Transparent Modal",
-      description: "Overlay without obscuring background",
-      route: "/transparent-modal",
-      color: "#FF9500",
+      title: "Manage Keys",
+      description: "Add or remove keys from system",
+      route: "/manage-keys",
+      icon: "key.fill",
+      color: colors.accent,
     }
   ];
 
-  const renderModalDemo = ({ item }: { item: (typeof modalDemos)[0] }) => (
-    <GlassView style={[
-      styles.demoCard,
-      Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-    ]} glassEffectStyle="regular">
-      <View style={[styles.demoIcon, { backgroundColor: item.color }]}>
-        <IconSymbol name="square.grid.3x3" color="white" size={24} />
-      </View>
-      <View style={styles.demoContent}>
-        <Text style={[styles.demoTitle, { color: theme.colors.text }]}>{item.title}</Text>
-        <Text style={[styles.demoDescription, { color: theme.dark ? '#98989D' : '#666' }]}>{item.description}</Text>
-      </View>
-      <Link href={item.route as any} asChild>
-        <Pressable>
-          <GlassView style={[
-            styles.tryButton,
-            Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }
-          ]} glassEffectStyle="clear">
-            <Text style={[styles.tryButtonText, { color: theme.colors.primary }]}>Try It</Text>
-          </GlassView>
-        </Pressable>
-      </Link>
-    </GlassView>
-  );
-
-  const renderHeaderRight = () => (
-    <Pressable
-      onPress={() => Alert.alert("Not Implemented", "This feature is not implemented yet")}
-      style={styles.headerButtonContainer}
-    >
-      <IconSymbol name="plus" color={theme.colors.primary} />
-    </Pressable>
-  );
-
-  const renderHeaderLeft = () => (
-    <Pressable
-      onPress={() => Alert.alert("Not Implemented", "This feature is not implemented yet")}
-      style={styles.headerButtonContainer}
-    >
-      <IconSymbol
-        name="gear"
-        color={theme.colors.primary}
-      />
-    </Pressable>
+  const renderMenuItem = (item: typeof menuItems[0]) => (
+    <Link key={item.route} href={item.route as any} asChild>
+      <Pressable style={styles.menuCard}>
+        <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+          <IconSymbol name={item.icon as any} color={colors.card} size={28} />
+        </View>
+        <View style={styles.menuContent}>
+          <Text style={styles.menuTitle}>{item.title}</Text>
+          <Text style={styles.menuDescription}>{item.description}</Text>
+        </View>
+        <IconSymbol name="chevron.right" color={colors.textSecondary} size={20} />
+      </Pressable>
+    </Link>
   );
 
   return (
@@ -81,81 +81,194 @@ export default function HomeScreen() {
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
-            title: "Building the app...",
-            headerRight: renderHeaderRight,
-            headerLeft: renderHeaderLeft,
+            title: "Key Management",
+            headerLargeTitle: true,
           }}
         />
       )}
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <FlatList
-          data={modalDemos}
-          renderItem={renderModalDemo}
-          keyExtractor={(item) => item.route}
+      <View style={[commonStyles.container]}>
+        <ScrollView 
           contentContainerStyle={[
-            styles.listContainer,
-            Platform.OS !== 'ios' && styles.listContainerWithTabBar
+            styles.scrollContent,
+            Platform.OS !== 'ios' && styles.scrollContentWithTabBar
           ]}
-          contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
-        />
+        >
+          {Platform.OS !== 'ios' && (
+            <Text style={[commonStyles.title, styles.headerTitle]}>Key Management</Text>
+          )}
+          
+          <View style={styles.statsContainer}>
+            <View style={[styles.statCard, { backgroundColor: colors.primary }]}>
+              <Text style={styles.statNumber}>{keys.length}</Text>
+              <Text style={styles.statLabel}>Total Keys</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: colors.secondary }]}>
+              <Text style={styles.statNumber}>{checkedOutCount}</Text>
+              <Text style={styles.statLabel}>Checked Out</Text>
+            </View>
+            <View style={[styles.statCard, { backgroundColor: colors.accent }]}>
+              <Text style={styles.statNumber}>{keys.length - checkedOutCount}</Text>
+              <Text style={styles.statLabel}>Available</Text>
+            </View>
+          </View>
+
+          <View style={styles.menuSection}>
+            {menuItems.map(renderMenuItem)}
+          </View>
+
+          {keys.length > 0 && (
+            <View style={styles.recentSection}>
+              <Text style={commonStyles.subtitle}>Recent Activity</Text>
+              {keys.slice(0, 3).map((key) => (
+                <View key={key.id} style={styles.activityCard}>
+                  <View style={styles.activityIcon}>
+                    <IconSymbol 
+                      name={key.isCheckedOut ? "lock.fill" : "lock.open.fill"} 
+                      color={key.isCheckedOut ? colors.error : colors.success} 
+                      size={20} 
+                    />
+                  </View>
+                  <View style={styles.activityContent}>
+                    <Text style={styles.activityTitle}>{key.name}</Text>
+                    <Text style={styles.activitySubtitle}>
+                      {key.isCheckedOut 
+                        ? `Checked out by ${key.checkedOutBy}` 
+                        : `Available at ${key.location}`}
+                    </Text>
+                  </View>
+                  <View style={[
+                    styles.statusBadge, 
+                    { backgroundColor: key.isCheckedOut ? colors.error : colors.success }
+                  ]}>
+                    <Text style={styles.statusText}>
+                      {key.isCheckedOut ? 'Out' : 'In'}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
       </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  scrollContentWithTabBar: {
+    paddingBottom: 120,
+  },
+  headerTitle: {
+    marginBottom: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 12,
+  },
+  statCard: {
     flex: 1,
-    // backgroundColor handled dynamically
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
   },
-  listContainer: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+  statNumber: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.card,
+    marginBottom: 4,
   },
-  listContainerWithTabBar: {
-    paddingBottom: 100, // Extra padding for floating tab bar
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.card,
+    textAlign: 'center',
   },
-  demoCard: {
+  menuSection: {
+    marginBottom: 24,
+  },
+  menuCard: {
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
   },
-  demoIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-  demoContent: {
+  menuContent: {
     flex: 1,
   },
-  demoTitle: {
+  menuTitle: {
     fontSize: 18,
     fontWeight: '600',
+    color: colors.text,
     marginBottom: 4,
-    // color handled dynamically
   },
-  demoDescription: {
+  menuDescription: {
     fontSize: 14,
-    lineHeight: 18,
-    // color handled dynamically
+    color: colors.textSecondary,
   },
-  headerButtonContainer: {
-    padding: 6,
+  recentSection: {
+    marginBottom: 24,
   },
-  tryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+  activityCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
   },
-  tryButtonText: {
-    fontSize: 14,
+  activityIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  activityContent: {
+    flex: 1,
+  },
+  activityTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    // color handled dynamically
+    color: colors.text,
+    marginBottom: 2,
+  },
+  activitySubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.card,
   },
 });

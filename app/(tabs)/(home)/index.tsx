@@ -58,6 +58,13 @@ export default function HomeScreen() {
       route: "/manage-keys",
       icon: "key.fill",
       color: colors.accent,
+    },
+    {
+      title: "Activity Log",
+      description: "View checkout and check-in history",
+      route: "/logs",
+      icon: "list.bullet.clipboard.fill",
+      color: colors.darkBlue,
     }
   ];
 
@@ -177,7 +184,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 2px 8px rgba(37, 99, 235, 0.15)',
     elevation: 3,
   },
   statNumber: {
@@ -202,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 2px 8px rgba(37, 99, 235, 0.1)',
     elevation: 3,
   },
   iconContainer: {
@@ -236,7 +243,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 2px 8px rgba(37, 99, 235, 0.1)',
     elevation: 3,
   },
   activityIcon: {

@@ -15,6 +15,14 @@ interface Key {
   checkedOutAt?: string;
 }
 
+interface LogEntry {
+  id: string;
+  keyName: string;
+  action: 'checkout' | 'checkin';
+  personName: string;
+  timestamp: string;
+}
+
 export default function CheckInScreen() {
   const [keys, setKeys] = useState<Key[]>([]);
   const [selectedKey, setSelectedKey] = useState<string>('');
@@ -35,6 +43,27 @@ export default function CheckInScreen() {
       }
     } catch (error) {
       console.log('Error loading keys:', error);
+    }
+  };
+
+  const addLogEntry = async (keyName: string, personName: string) => {
+    try {
+      const storedLogs = await AsyncStorage.getItem('checkoutLogs');
+      const logs: LogEntry[] = storedLogs ? JSON.parse(storedLogs) : [];
+      
+      const newLog: LogEntry = {
+        id: Date.now().toString(),
+        keyName,
+        action: 'checkin',
+        personName,
+        timestamp: new Date().toISOString(),
+      };
+      
+      logs.push(newLog);
+      await AsyncStorage.setItem('checkoutLogs', JSON.stringify(logs));
+      console.log('Log entry added:', newLog);
+    } catch (error) {
+      console.log('Error adding log entry:', error);
     }
   };
 
@@ -68,6 +97,12 @@ export default function CheckInScreen() {
         });
 
         await AsyncStorage.setItem('keys', JSON.stringify(updatedKeys));
+        
+        // Add log entry
+        const selectedKeyObj = parsedKeys.find(k => k.id === selectedKey);
+        if (selectedKeyObj) {
+          await addLogEntry(selectedKeyObj.name, returnedBy.trim());
+        }
         
         Alert.alert(
           'Success',
@@ -236,12 +271,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 2,
     borderColor: colors.border,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 2px 8px rgba(37, 99, 235, 0.1)',
     elevation: 3,
   },
   keyCardSelected: {
     borderColor: colors.secondary,
-    backgroundColor: colors.secondary + '10',
+    backgroundColor: colors.lightBlue,
   },
   keyCardContent: {
     flexDirection: 'row',
@@ -252,7 +287,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.secondary + '20',
+    backgroundColor: colors.lightBlue,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -282,7 +317,7 @@ const styles = StyleSheet.create({
     padding: 40,
     backgroundColor: colors.card,
     borderRadius: 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 2px 8px rgba(37, 99, 235, 0.1)',
     elevation: 3,
   },
   emptyText: {

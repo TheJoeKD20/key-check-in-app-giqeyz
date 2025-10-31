@@ -110,7 +110,10 @@ export default function CheckInScreen() {
           [
             {
               text: 'OK',
-              onPress: () => router.back(),
+              onPress: () => {
+                // Navigate to home screen and refresh
+                router.replace('/');
+              },
             },
           ]
         );

@@ -110,7 +110,10 @@ export default function CheckOutScreen() {
           [
             {
               text: 'OK',
-              onPress: () => router.back(),
+              onPress: () => {
+                // Navigate to home screen and refresh
+                router.replace('/');
+              },
             },
           ]
         );

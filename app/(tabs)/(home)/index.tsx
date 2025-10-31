@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Stack, Link } from "expo-router";
+import { Stack, Link, useFocusEffect } from "expo-router";
 import { ScrollView, Pressable, StyleSheet, View, Text, Platform } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles } from "@/styles/commonStyles";
@@ -19,9 +19,18 @@ export default function HomeScreen() {
   const [keys, setKeys] = useState<Key[]>([]);
   const [checkedOutCount, setCheckedOutCount] = useState(0);
 
+  // Load keys when component mounts
   useEffect(() => {
     loadKeys();
   }, []);
+
+  // Reload keys whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Home screen focused - reloading keys');
+      loadKeys();
+    }, [])
+  );
 
   const loadKeys = async () => {
     try {
@@ -31,6 +40,7 @@ export default function HomeScreen() {
         setKeys(parsedKeys);
         const checkedOut = parsedKeys.filter((k: Key) => k.isCheckedOut).length;
         setCheckedOutCount(checkedOut);
+        console.log('Keys loaded:', parsedKeys.length, 'Checked out:', checkedOut);
       }
     } catch (error) {
       console.log('Error loading keys:', error);
